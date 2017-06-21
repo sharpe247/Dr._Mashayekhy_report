@@ -195,9 +195,9 @@ An adaptation of that algorithm for our problem follows.
 \STATE Broadcast $\langle j,\ \perp \rangle$  to all $ p'_j$
 \ENDIF
 \STATE Receive $\langle j, r_j \rangle\ from\ all\ p'_j$
-best = $argmax_j'(r'_j)$ from $p_s$
+best = $argmax_{j'}(r'_j)$ from $p_s$
 \IF {best = j }
-\STATE Send $\langle j \rangle$ to all $p_s$
+\STATE Send $\langle j \rangle$ to all $p$
 \STATE $r_j \leftarrow r_j -C(f_i, .)$
 \ENDIF
 
