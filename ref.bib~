@@ -6,9 +6,12 @@
   year={2010},
   organization={ACM}
 }
-@article{murthy2017distributed,
-  title={Distributed Approximation Algorithms for the Multiple Knapsack Problem},
-  author={Murthy, Ananth and Yeshwanth, Chandan and Rao, Shrisha},
-  journal={arXiv preprint arXiv:1702.00787},
-  year={2017}
+@inproceedings{jang:CIKM10,
+  title={Ranking under temporal constraints},
+  author={Wang, Lidan and Metzler, Donald and Lin, Jimmy},
+  booktitle={Proceedings of the 19th ACM international conference on Information and knowledge management},
+  pages={79--88},
+  year={2010},
+  organization={ACM}
 }
+

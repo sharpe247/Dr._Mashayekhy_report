@@ -21,7 +21,7 @@
 \usepackage{color}
 \usepackage{bm}
 \usepackage{algorithm}
-\usepackage[noend]{algorithmic}
+\usepackage{algorithmic}
 %[noend]
 \usepackage{subfig}
 \usepackage[dvips]{graphicx}
@@ -29,10 +29,10 @@
 
 \newtheorem{definition}{Definition}
 %\newtheorem{algorithm}{Algorithm}
-\newtheorem{theorem}{Theorem}
-\newtheorem{protocol}{Protocol}
-\newtheorem{axiom}[theorem]{Axiom}
-\newtheorem{lemma}{Lemma}
+%\newtheorem{theorem}{Theorem}
+%\newtheorem{protocol}{Protocol}
+%\newtheorem{axiom}[theorem]{Axiom}
+%\newtheorem{lemma}{Lemma}
 
 
 \hyphenation{op-tical net-works semi-conduc-tor}
@@ -165,10 +165,50 @@ represent the integrality requirements for the decision variables.
 Notice that the time constraint for all $P$ machines is the same~($T(q)$) because these can all be run in parallel.\\
 This can be modeled in a similar greedy manner.
 
-homogeneous machines
+\subsection{homogeneous machines}
+Murthy et. al \cite{murthy2017distributed} provide an algorithm that solves the multiple knapsack problem in a distributed manner.
+An adaptation of that algorithm for our problem follows.
+\begin{algorithm}[H]
+ \caption{Greedy Distributed (homogeneous machines) algorithm with $T(q)$ time constraint for each machine }
+ \begin{algorithmic}[1]
+ \renewcommand{\algorithmicrequire}{\textbf{Input:}}
+ \renewcommand{\algorithmicensure}{\textbf{Output:}}
+ %\REQUIRE 
+% \ENSURE  out
+ %\\ \textit{Initialisation} :
+  \STATE $ItemList \leftarrow ItemList.SortDecreasingBy(\frac{\lambda(f_i, .)}{C(f_i, .)})$
+\STATE i=0
+\STATE $\forall j, r_j = T(q)$
 
-heterogeneous machines
+\textbf{For the source $p_s$}
+\FOR {feature $f_i$; i=1 to n}
+  \STATE Broadcast $\langle C(f_i, .)\rangle$ to all $p_j$
+\STATE Recieve$ \langle j \rangle$
+\STATE Assign i to j
+\ENDFOR
 
+\textbf{For the processor $p_j$:}
+\STATE Receive $\langle C(f_i, .) \rangle$ from $p_s$
+\IF { $r_j>= C(f_i) $}
+\STATE Broadcast $\langle j,\ r_j \rangle$  to all $ p'_j$
+\ELSE 
+\STATE Broadcast $\langle j,\ \perp \rangle$  to all $ p'_j$
+\ENDIF
+\STATE Receive $\langle j, r_j \rangle\ from\ all\ p'_j$
+best = $argmax_j'(r'_j)$ from $p_s$
+\IF {best = j }
+\STATE Send $\langle j \rangle$ to all $p_s$
+\STATE $r_j \leftarrow r_j -C(f_i, .)$
+\ENDIF
+
+ \textbf{procedure Final():}
+\FOR {j =1 to m}
+\STATE Pick $max(p_j, max_{i:C(f_i)<= T(q)}(\lambda_i) )$
+\ENDFOR 
+ \end{algorithmic}
+ \end{algorithm}
+\subsection{heterogeneous machines}
+Min-Min and Max-Min heuristics
 
 {\tiny
 \newcommand{\BIBdecl}{\setlength{\itemsep}{0.2 em}}
