@@ -1,0 +1,183 @@
+%new draft
+%% bare_conf.tex
+%% V1.3
+%% 2007/01/11
+%% by Michael Shell
+%% See:
+%% http://www.michaelshell.org/
+%% for current contact information.
+%%
+%% This is a skeleton file demonstrating the use of IEEEtran.cls
+%% (requires IEEEtran.cls version 1.7 or later) with an IEEE conference paper.
+\documentclass[10pt, conference, compsocconf]{IEEEtran}
+
+
+
+\usepackage[cmex10]{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{multirow}
+\usepackage{color}
+\usepackage{bm}
+\usepackage{algorithm}
+\usepackage[noend]{algorithmic}
+%[noend]
+\usepackage{subfig}
+\usepackage[dvips]{graphicx}
+
+
+\newtheorem{definition}{Definition}
+%\newtheorem{algorithm}{Algorithm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{protocol}{Protocol}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{lemma}{Lemma}
+
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+% paper title
+% can use linebreaks \\ within to get better formatting as desired
+\title{Distributed Ranking Under Temporal Constraints}
+
+\author{Aman Sawhney}
+\date{asawhney@udel.edu}
+
+%\author{
+%\IEEEauthorblockN{Lena Mashayekhy, $\:$ Mark M. Nejad, $\:$ Daniel Grosu}
+%\IEEEauthorblockA{Department of Computer Science\\
+% Wayne State University\\
+% Detroit, MI 48202, USA\\
+%{\tt \{mlena, mahyar, dgrosu\}@wayne.edu}}
+%\and
+%\IEEEauthorblockN{xxx}
+%\IEEEauthorblockA{Department of  xxx}
+%}
+
+
+\maketitle
+
+
+\begin{abstract}
+Ranking is the central problem for information retrieval.
+``Ranking documents by their relevance to queries is a common way for search engines to return retrieval results to users. 
+In doing so, a single relevance score must be calculated based on all the measurable evidence. 
+In traditional informational retrieval models (e.g. vector space model), relevance is represented by the similarity metric between a document and a query. The assumptions underlying these models are that (1) the content of a document can be represented by a vector of concept-bearing terms.."
+
+``This paper introduces the notion of temporally constrained ranked retrieval, which, given a query and a time constraint, produces the best possible ranked list within the specified time limit. Naturally, more time should translate into bet- ter results, but the ranking algorithm should always pro- duce some results. This property is desirable from a number of perspectives: to cope with diverse users and information needs, as well as to better manage system load and variance in query execution times. We propose two temporally con- strained ranking algorithms based on a class of probabilistic prediction models that can naturally incorporate efficiency constraints: one that makes independent feature selection de- cisions, and the other that makes joint feature selection de- cisions. Experiments on three different test collections show that both ranking algorithms are able to satisfy imposed time constraints, although the joint model outperforms the independent model in being able to deliver more effective results, especially under tight time constraints, due to its ability to capture feature dependencies."
+\end{abstract}
+
+\begin{IEEEkeywords}
+\end{IEEEkeywords}
+
+
+% For peerreview papers, this IEEEtran command inserts a page break and
+% creates the second title. It will be ignored for other modes.
+\IEEEpeerreviewmaketitle
+
+
+\section{Introduction}
+
+\vspace*{0.1cm}
+\noindent \emph{Our Contribution.}
+ 
+
+\vspace*{0.1cm}
+\noindent \emph{Related Work.}
+\cite{wang:CIKM10}
+
+%\subsection{Organization}
+\vspace*{0.1cm}
+\noindent \emph{Organization.}
+
+
+
+\section{Wang et. al Indep model}
+Let $q$ be the query placed by a user, $d$ be the set of documents in the index, $F$ be the feature set, where
+$$F=\ \{f_1,\ f_2,\ \dots,\ f_n\}$$
+then \\
+$$score(q,\ d)\ = \sum_{i}^{}(\lambda_i .f_i(q,\ d))$$
+where $\lambda_i$ is the weight associated with feature $f_i$\\
+The features $f_i$ can be either term features(unigram) or term proximity features(bigrams).\\\\
+If the model is temporally constrained with a limit of $T(q)$, i.e. the time associated with the query $q$ then \\
+$$score(q,\ d)\ = \sum_{f_i(q,\ .):\ S_i\ =1}^{}(\lambda_i .f_i(q,\ d))$$
+s.t. \\
+$$\sum_{f_i(q,\ .):\ S_i\ =1}C(f_i(q,\ .))\ <= T(q)$$
+Here, $C(f_i(q))$ is the cost associated with feature $i$. $S_i\ =1$ implies that the feature $i$ is selected.\\
+$$\hat{S}=\ argmax_S\ \sum_{i}S_i\ .\ \lambda_i(q)$$
+s.t.\\
+$$\sum_{i}S_i\ C(f_i(q,\ .))\ <=T(q),\ \ S_i\ \in\{0,\ 1\}$$
+Cost is computed by the document frequency that the query generates for the a particular feature.\\\\
+So, in this model there is a profit($\lambda$) associated with the selection of a feature, a weight($C(f)$) that has to be borne and a total weight constraint(time constraint $T(q)$). Hence, the problem can viewed as a classic \textit{knapsack problem}.
+The authors solve the problem using a greedy approach: sort the features in decreasing ratio of profit to weight density, add features one by one until you exceed the time constraint or run out of of features.
+
+
+\section{Problem}\label{sec:prob}
+In this section, we model the problem of temporally constrained ranking with multiple processors, where there is a time constraint~$T(q)$ for a query~$q$. 
+
+Linear ranking functions are a class of effective ranking models used for information retrieval.
+A linear ranking function is a characterized by a set of features~$F=\{f_1,\dotsc,f_N\}$ and their corresponding model parameters~$ \Lambda =\{\lambda_1,\dotsc,\lambda_N\}$, where each feature~$f_i$ is a function mapping a query-document pair~$(q,d)$ to a real value. 
+The relevance of document~$d$ to query~$q$, $score(q,d)$, is defined as a weighted linear combination of the feature values computed over the document and the query.
+As a result, $score(q,d)$ is defined as follows:
+\begin{align}
+score(q,d) = \sum_{i= 1}^{N}  \lambda_i(q) f_i(q,d)
+\end{align}
+where $\lambda_i(q)$ is calculated based on meta-features defined over query~$q$ for each feature~$i$, and other  
+
+Since using all features in the linear ranking function may exceed the time constraint, we need to change the efficiency characterises of the ranking function by choosing
+only a subset of the features  in order to meet its time requirement. The resulting linear ranking function is a temporally constrained linear ranking function. 
+
+The problem can  be formulated as 
+an integer program, as follows:
+
+\begin{align}
+&\text{Maximize } score(q,d) = \sum_{i= 1}^{N} \sum_{p=1}^{P}   \lambda_i(q) \cdot  x_{ip}\label{eq:ipobj}\\ %v_i(\hat{\beta_i})
+%&\text{Minimize }  \sum_{p \in \mathcal{PM}} Y_p \label{eq:ipobj2}\\ %v_i(\hat{\beta_i})
+&\text{Subject to: } \nonumber \\
+%&\qquad \sum_{i \in \mathcal{N}}x_{ip} \leq N \cdot Y_p, \forall p \in \mathcal{PM} \label{eq:ipc3}\\
+&\qquad \sum_{p=1}^{P}x_{ip} \leq 1, \forall i=1, \dotsc, N  \label{eq:ipc2}\\
+&\qquad \sum_{i=1}^{N}  w_i C(f_i(q, \cdot))x_{ip} \leq T(q), \forall p=1, \dotsc, P  \label{eq:ipc1} \\
+&\qquad x_{ip}\in\{0,1\}, \forall i=1, \dotsc, N, \forall p=1, \dotsc, P \label{eq:ipc4}
+%$\sigma_{ir} = \sum_{m \in \mathcal{VM}} {k}_{im}w_{mr}$
+\end{align} 
+
+The decision variables $x_{ip}$ are defined as follows:
+ %$x_{it} = 1$ if $S_i$ is allocated to $i$ at $t$; and 0 otherwise.
+\begin{align} x_{ip} &=
+\begin{cases} 
+1 & \quad \text{if $f_i$ is allocated to $p$,}\\
+0 & \quad \text{otherwise.}
+\end{cases} 
+\end{align} 
+where $P$ is the number of computers and $N$ is the number of features. 
+
+The objective function is to maximize the total score of the selected features. 
+Constraints~(\ref{eq:ipc2}) ensure that each feature is selected at most once. 
+Constraints~(\ref{eq:ipc1}) guarantee that 
+the computational cost of selected features for each processor does 
+not exceed the time requirement for any processor.
+Constraints~(\ref{eq:ipc4}) 
+represent the integrality requirements for the decision variables. 
+
+Notice that the time constraint for all $P$ machines is the same~($T(q)$) because these can all be run in parallel.\\
+This can be modeled in a similar greedy manner.
+
+homogeneous machines
+
+heterogeneous machines
+
+
+{\tiny
+\newcommand{\BIBdecl}{\setlength{\itemsep}{0.2 em}}
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,ref}
+}
+
+%\small
+
+
+\end{document}
+
