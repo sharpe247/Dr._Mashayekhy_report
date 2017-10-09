@@ -41,17 +41,18 @@
 \begin{document}
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
-\title{Distributed Ranking Under Temporal Constraints}
+\title{Distributed algorithm for Ranking under Temporal Constraints}
 
-\author{Aman Sawhney}
-\date{asawhney@udel.edu}
+%\author{Aman Sawhney}
+%\email{asawhney@udel.edu}
 
-%\author{
-%\IEEEauthorblockN{Lena Mashayekhy, $\:$ Mark M. Nejad, $\:$ Daniel Grosu}
-%\IEEEauthorblockA{Department of Computer Science\\
-% Wayne State University\\
-% Detroit, MI 48202, USA\\
-%{\tt \{mlena, mahyar, dgrosu\}@wayne.edu}}
+\author{
+\IEEEauthorblockN{Aman Sawhney, Lena Mashayekhy,}
+\IEEEauthorblockA{Department of Computer Science\\
+ University of Delaware\\
+ Newark, DE 19716, USA\\
+{\tt \{asawhney, mlena\}@udel.edu}}
+}
 %\and
 %\IEEEauthorblockN{xxx}
 %\IEEEauthorblockA{Department of  xxx}
@@ -62,15 +63,12 @@
 
 
 \begin{abstract}
-Ranking is the central problem for information retrieval.
-``Ranking documents by their relevance to queries is a common way for search engines to return retrieval results to users. 
-In doing so, a single relevance score must be calculated based on all the measurable evidence. 
-In traditional informational retrieval models (e.g. vector space model), relevance is represented by the similarity metric between a document and a query. The assumptions underlying these models are that (1) the content of a document can be represented by a vector of concept-bearing terms.."
-
-``This paper introduces the notion of temporally constrained ranked retrieval, which, given a query and a time constraint, produces the best possible ranked list within the specified time limit. Naturally, more time should translate into bet- ter results, but the ranking algorithm should always pro- duce some results. This property is desirable from a number of perspectives: to cope with diverse users and information needs, as well as to better manage system load and variance in query execution times. We propose two temporally con- strained ranking algorithms based on a class of probabilistic prediction models that can naturally incorporate efficiency constraints: one that makes independent feature selection de- cisions, and the other that makes joint feature selection de- cisions. Experiments on three different test collections show that both ranking algorithms are able to satisfy imposed time constraints, although the joint model outperforms the independent model in being able to deliver more effective results, especially under tight time constraints, due to its ability to capture feature dependencies."
-\end{abstract}
+Search engines order documents by relevance to retrieve results in response to user queries. Relevance of results is evaluated using ranking functions, which are composed of feature and associated feature weights. In response to a query, features values for each query-document pair are generated and input to a ranking function, which then computes a score for each pair. This score is used to generate an ordered subset of documents.\\
+The notion of ranking documents under temporal constraints, ie. to produce a ranked order of documents given a time constraint(T(q)), has been around for a while. In order to satisfy T(q), only a subset of all features may be considered while evaluation.Naturally, this ranked order might not be best possible. An intuitive modification to improve performance is to model ranking functions in a distributed setting and, leverage parallelism to use more features within the same time constraint.\\
+This paper models temporally constrained ranked functions in a distributed setting and provides a greedy algorithm to rank a document corpus(D) in response to a query(q) within a time constraint(T(q)). We use simulations to study the performance of our algorithm in the special case of homogeneous machines.\end{abstract}
 
 \begin{IEEEkeywords}
+Distributed, Algorithm, Information Retrieval
 \end{IEEEkeywords}
 
 
@@ -165,11 +163,12 @@ represent the integrality requirements for the decision variables.
 Notice that the time constraint for all $P$ machines is the same~($T(q)$) because these can all be run in parallel.\\
 This can be modeled in a similar greedy manner.
 
-\subsection{homogeneous machines}
+\subsection{Homogeneous Machines}
 Murthy et. al \cite{murthy2017distributed} provide an algorithm that solves the multiple knapsack problem in a distributed manner.
 An adaptation of that algorithm for our problem follows.
 \begin{algorithm}[H]
  \caption{Greedy Distributed (homogeneous machines) algorithm with $T(q)$ time constraint for each machine }
+\label {algo1}
  \begin{algorithmic}[1]
  \renewcommand{\algorithmicrequire}{\textbf{Input:}}
  \renewcommand{\algorithmicensure}{\textbf{Output:}}
@@ -207,6 +206,32 @@ best = $argmax_{j'}(r'_j)$ from $p_s$
 \ENDFOR 
  \end{algorithmic}
  \end{algorithm}
+
+Homogeneous setting implies that the performance of the machines for the same input is similar(same ideally). As described in Algorithm \ref{algo1}, there is constraint on the computation time of all machines($T(q)$). In decreasing weight to cost ratio, the source broadcasts the cost(time) of computing the current feature to all machines. If the remaining computation time of a machine is greater than the cost of the feature, then the machine broadcasts its willingness to accept to all the machines. Since, all willing machines transmit their offer to all machines, whoever made the best offer claims the feature. This is continued till all features are finished or all machines are fully allocated. \\
+In this light, Algorithm \ref{algo1} can viewed as a scheduling algorithm. \\
+\subsubsection{First Simulation}
+Let $P$ be the number of machines and $N$ be the number of features. It is reasonable to assume that :
+$$ N\ >\ P$$
+The inputs to simulation are :
+\begin {itemize}
+\item Number of features $N$.
+\item A list of feature weights $\lambda(f_i)$ where $i \in [1..N]$. 
+\item A list of feature costs $C(f_i)$ where $i \in [1..N]$.
+\item Number of machines $P$.
+\item Time constraint $T(q)$.
+\end{itemize}
+
+
+\textbf{Scheduling}\\
+The machines are implemented as a matrix $M$ with all values initialized as $T(q)$ ie. $$M =[T(q),\ ,T(q),\, \ \dots,\ T(q)]$$ of dimension $1\times P$.\\
+ A decreasing list of weight to cost ratios ($R$) is calculated. Iterating over the list $R$ (ie. all the features $f_i$ s.t $i\in[1 .. N]$), the machine $j$ with the maximum available computation time $m_j$,  s.t $c_i\ \leq\ m_j$ is chosen to run feature $f_i$. In other words, for all the machines $j$ ($j\ \in [1..P]$), whose current available computation time is greater than the cost of the feature $i$, choose the one with the maximum available time to run the feature $f_i$ . \\
+The value of $j$ is then updated to be $m_j\ - c_i$. In case, there are multiple machines with same available computation time, a random choice is made. This is continued, until either all the features are assigned or all machines are fully allocated (including cases where some machines have time left but not enough to allocate remaining features).\\
+The number of messages that are passed is computed implicitly(counting assuming that implementation is truly distributed). After the assignment is completed, the assignments that were made are reported along with the total number of messages passed and the utilization for each machine. \\
+Since, the machines are homogeneous, given that all the input conditions are the same, the \textit{makespan} would not change on any number of iterations of the algorithm.\\
+
+
+
+
 \subsection{heterogeneous machines}
 Min-Min and Max-Min heuristics
 
