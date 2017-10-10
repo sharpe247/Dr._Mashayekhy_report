@@ -25,6 +25,7 @@
 %[noend]
 \usepackage{subfig}
 \usepackage[dvips]{graphicx}
+\usepackage{framed}
 
 
 \newtheorem{definition}{Definition}
@@ -228,10 +229,46 @@ The machines are implemented as a matrix $M$ with all values initialized as $T(q
 The value of $j$ is then updated to be $m_j\ - c_i$. In case, there are multiple machines with same available computation time, a random choice is made. This is continued, until either all the features are assigned or all machines are fully allocated (including cases where some machines have time left but not enough to allocate remaining features).\\
 The number of messages that are passed is computed implicitly(counting assuming that implementation is truly distributed). After the assignment is completed, the assignments that were made are reported along with the total number of messages passed and the utilization for each machine. \\
 Since, the machines are homogeneous, given that all the input conditions are the same, the \textit{makespan} would not change on any number of iterations of the algorithm.\\
-
-
-
-
+\begin{centering}
+\begin{figure}[h!]
+%\fboxsep=10mm
+%\fboxrule=4pt
+\label{fig1}
+\textbf{Input configuration}
+$$N =5$$
+$$P=2$$
+$$\lambda(f_i) =\{10,25,55,23,34\}$$
+$$C(f_i)= \{1,2,3,4,5\}$$
+$$T(q)=5$$
+Then,
+Intialize $M= [5,5]$ and feature assignment mat. $A=[[],[]]$\\
+$$R =\{10.0, 12.5, 18.33, 5.75, 6.8\}$$
+$$argsorted\ R= \{2,1,0,4,3\}$$
+$f_2$ has the highest weight/cost value and has cost =3.\\\\
+Assign $f_2$ to a machine with $m_j >2$\\
+Since $m_1 =m_2=5$, pick at random\\
+$A_2 \leftarrow f_2$
+$$argsorted\ R= \{1,0,4,3\}$$
+$$A =[[], [2]]$$
+$$M =[5, 2]$$
+Next, $C(f_1) =2$,\\
+Assign $f_1$ to a machine with $m_1 >2$\\
+$A_1 \leftarrow f_1$
+$$argsorted\ R= \{0,4,3\}$$
+$$A =[[1], [2]]$$
+$$M =[3, 2]$$
+Next, $C(f_0) =1$,
+Assign $f_0$ to a machine with $m_1 >2$\\
+$A_1 \leftarrow f_0$\\
+$$A =[[1, 0], [2]]$$
+$$M =[2, 2]$$
+$$argsorted\ R= \{4,3\}$$
+Next, $C(f_4) =5$,\\
+Time required greater than available on any machine $break$
+\caption{Toy Example for simulation 1}
+\end{figure}
+\end{centering}
+A toy example of the simulation is presented in figure \ref{fig1}.
 \subsection{heterogeneous machines}
 Min-Min and Max-Min heuristics
 
