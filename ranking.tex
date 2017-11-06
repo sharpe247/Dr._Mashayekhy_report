@@ -23,9 +23,13 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 %[noend]
+
+
 \usepackage{subfig}
 \usepackage[dvips]{graphicx}
 \usepackage{framed}
+\usepackage{setspace}
+
 
 
 \newtheorem{definition}{Definition}
@@ -210,7 +214,7 @@ best = $argmax_{j'}(r'_j)$ from $p_s$
 
 Homogeneous setting implies that the performance of the machines for the same input is similar(same ideally). As described in Algorithm \ref{algo1}, there is constraint on the computation time of all machines($T(q)$). In decreasing weight to cost ratio, the source broadcasts the cost(time) of computing the current feature to all machines. If the remaining computation time of a machine is greater than the cost of the feature, then the machine broadcasts its willingness to accept to all the machines. Since, all willing machines transmit their offer to all machines, whoever made the best offer claims the feature. This is continued till all features are finished or all machines are fully allocated. \\
 In this light, Algorithm \ref{algo1} can viewed as a scheduling algorithm. \\
-\subsubsection{First Simulation}
+\subsubsection{Toy Simulation}
 Let $P$ be the number of machines and $N$ be the number of features. It is reasonable to assume that :
 $$ N\ >\ P$$
 The inputs to simulation are :
@@ -229,11 +233,10 @@ The machines are implemented as a matrix $M$ with all values initialized as $T(q
 The value of $j$ is then updated to be $m_j\ - c_i$. In case, there are multiple machines with same available computation time, a random choice is made. This is continued, until either all the features are assigned or all machines are fully allocated (including cases where some machines have time left but not enough to allocate remaining features).\\
 The number of messages that are passed is computed implicitly(counting assuming that implementation is truly distributed). After the assignment is completed, the assignments that were made are reported along with the total number of messages passed and the utilization for each machine. \\
 Since, the machines are homogeneous, given that all the input conditions are the same, the \textit{makespan} would not change on any number of iterations of the algorithm.\\
-\begin{centering}
 \begin{figure}[h!]
-%\fboxsep=10mm
-%\fboxrule=4pt
-\label{fig1}
+\begin{framed}
+\begin{scriptsize}
+\begin{spacing}{0.5}
 \textbf{Input configuration}
 $$N =5$$
 $$P=2$$
@@ -241,7 +244,7 @@ $$\lambda(f_i) =\{10,25,55,23,34\}$$
 $$C(f_i)= \{1,2,3,4,5\}$$
 $$T(q)=5$$
 Then,
-Intialize $M= [5,5]$ and feature assignment mat. $A=[[],[]]$\\
+Intialize $M=[5,5]$ and feature assignment matrix $A=[[],[]]$\\
 $$R =\{10.0, 12.5, 18.33, 5.75, 6.8\}$$
 $$argsorted\ R= \{2,1,0,4,3\}$$
 $f_2$ has the highest weight/cost value and has cost =3.\\\\
@@ -263,15 +266,38 @@ $A_1 \leftarrow f_0$\\
 $$A =[[1, 0], [2]]$$
 $$M =[2, 2]$$
 $$argsorted\ R= \{4,3\}$$
-Next, $C(f_4) =5$,\\
-Time required greater than available on any machine $break$
-\caption{Toy Example for simulation 1}
+Next,
+$$C(f_4) =5$$
+Time required greater than available on any machine $break$.
+\end{spacing}
+\end{scriptsize}
+\end{framed}
+\label{fig:1}
+\caption{Toy simulation}
 \end{figure}
-\end{centering}
-A toy example of the simulation is presented in figure \ref{fig1}.
-\subsection{heterogeneous machines}
-Min-Min and Max-Min heuristics
 
+
+
+
+A toy example of the simulation is presented in figure \ref{fig:1}.
+\subsection{heterogeneous machines}
+In the case of heterogeneous machines the computation time or the cost of a feature would be different for different machines. As such an assumption is made that an expected time completion matrix(ETC) that contains the expected completion times of any task on any machine is known to us. So, \\
+$$ETC = \bigg \{\begin{smallmatrix} c_{11}&c_{12}& \dots c_{1N}\\  \vdots&\vdots&\vdots \\ c_{P1}&c_{P2}& \dots c_{PN} \end{smallmatrix} \bigg \}$$
+where $N$ is the number of features and $P$ is the number of machines.\\
+$ETC$ along with $\lambda$ can then be used to compute the weight to cost ratio matrix which essentially provides the ratio of weight and the cost incurred for a feature on a given machine. 
+$$W = \bigg \{\begin{smallmatrix} w_{11}&w_{12}& \dots w_{1N}\\  \vdots&\vdots&\vdots \\ w_{P1}&w_{P2}& \dots w_{PN} \end{smallmatrix} \bigg \}$$
+where $w_{ij} =\frac{\lambda(f_i)}{c_{ij}}$\\
+As before,  $M =[T(q),\ ,T(q),\, \ \dots,\ T(q)]$ with dimensions $1\times P$. 
+\begin{algorithm}[H]
+ \caption{Rough algorithm}
+\label {algo1}
+ \begin{algorithmic}[1]
+ \STATE Sort W in decreasing order\\
+ \STATE For all entries in W such that $w_{ij}$ is not greater than T(q) and $f_i$ is not assigned to any machine start machine assignment\\
+\STATE Follow algorithm1 from line 4 onwards
+ \end{algorithmic}
+ \end{algorithm}
+The complexity of this algorithm would be $\mathcal{O}NP$
 {\tiny
 \newcommand{\BIBdecl}{\setlength{\itemsep}{0.2 em}}
 \bibliographystyle{IEEEtran}
